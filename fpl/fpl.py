@@ -29,11 +29,12 @@ import itertools
 import json
 import os
 
-from .constants import API_URLS
+from .constants import API_URLS, DRAFT_API_URLS
 from .models.classic_league import ClassicLeague
 from .models.fixture import Fixture
 from .models.gameweek import Gameweek
 from .models.h2h_league import H2HLeague
+from .models.draft_league import DraftLeague
 from .models.player import Player, PlayerSummary
 from .models.team import Team
 from .models.user import User
@@ -562,6 +563,29 @@ class FPL:
             return league
 
         return H2HLeague(league, session=self.session)
+
+    async def get_draft_league(self, league_id, return_json=False):
+        """Returns a `H2HLeague` object with the given `league_id`..
+
+        Information is taken from e.g.:
+            https://draft.premierleague.com/api/league/123456/details
+
+        :param league_id: A Draft H2H league's ID.
+        :type league_id: string or int
+        :param return_json: (optional) Boolean. If ``True`` returns a ``dict``,
+            if ``False`` returns a :class:`DraftLeague` object. Defaults to
+            ``False``.
+        :type return_json: bool
+        :rtype: :class:`DraftLeague` or ``dict``
+        """
+
+        url = DRAFT_API_URLS["details"].format(league_id)
+        league = await fetch(self.session, url)
+
+        if return_json:
+            return league
+
+        return DraftLeague(league, session=self.session)
 
     async def login(self, email=None, password=None):
         """Returns a requests session with FPL login authentication.
