@@ -33,7 +33,9 @@ DRAFT_API_BASE_URL = "https://draft.premierleague.com/api/"
 DRAFT_API_URLS = {
     "details": "{}league/{{}}/details".format(DRAFT_API_BASE_URL),
     "transactions": "{}draft/league/{{}}/transactions".format(DRAFT_API_BASE_URL),
-    "trades": "{}draft/league/{{}}/trades".format(DRAFT_API_BASE_URL)
+    "trades": "{}draft/league/{{}}/trades".format(DRAFT_API_BASE_URL),
+    "user_picks": "{}entry/{{}}/event/{{}}".format(DRAFT_API_BASE_URL),
+    "user": "{}entry/{{}}/public".format(DRAFT_API_BASE_URL)
 }
 
 PICKS_FORMAT = "{} {}{}"

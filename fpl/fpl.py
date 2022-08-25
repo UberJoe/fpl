@@ -65,7 +65,7 @@ class FPL:
         except StopIteration:
             setattr(self, "current_gameweek", 0)
 
-    async def get_user(self, user_id=None, return_json=False):
+    async def get_user(self, user_id=None, draft=False, return_json=False):
         """Returns the user with the given ``user_id``.
 
         Information is taken from e.g.:
@@ -88,8 +88,10 @@ class FPL:
             except TypeError:
                 raise Exception("You must log in before using `get_user` if "
                                 "you do not provide a user ID.")
-
-        url = API_URLS["user"].format(user_id)
+        if draft == False:
+            url = API_URLS["user"].format(user_id)
+        else:
+            url = DRAFT_API_URLS["user"].format(user_id)
         user = await fetch(self.session, url)
 
         if return_json:

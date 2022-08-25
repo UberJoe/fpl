@@ -4,7 +4,7 @@ import json
 import aiohttp
 from urllib3.util import response
 
-from ..constants import API_URLS, MIN_GAMEWEEK, MAX_GAMEWEEK
+from ..constants import API_URLS, DRAFT_API_BASE_URL, DRAFT_API_URLS, MIN_GAMEWEEK, MAX_GAMEWEEK
 from ..utils import fetch, logged_in, post, get_headers
 
 is_c = "is_captain"
@@ -129,8 +129,12 @@ class User():
 
     def __init__(self, user_information, session):
         self._session = session
-        for k, v in user_information.items():
-            setattr(self, k, v)
+        if "entry" in user_information:
+            for k, v in user_information["entry"].items():
+                setattr(self, k, v)
+        else:
+            for k, v in user_information.items():
+                setattr(self, k, v)
 
     async def get_gameweek_history(self, gameweek=None):
         """Returns a list containing the gameweek history of the user.
@@ -200,7 +204,7 @@ class User():
 
         return history["chips"]
 
-    async def get_picks(self, gameweek=None):
+    async def get_picks(self, gameweek=None, draft=False):
         """Returns a dict containing the user's picks each gameweek.
 
         Key is the gameweek number, value contains picks of the gameweek.
@@ -214,9 +218,13 @@ class User():
         if hasattr(self, "_picks"):
             picks = self._picks
         else:
+            if draft == False:
+                url = API_URLS["user_picks"].format(self.id, gameweek)
+            else:
+                url = DRAFT_API_URLS["user_picks"].format(self.id, gameweek)
             tasks = [asyncio.ensure_future(
                      fetch(self._session,
-                           API_URLS["user_picks"].format(self.id, gameweek)))
+                           url))
                      for gameweek in range(self.started_event,
                                            self.current_event + 1)]
             picks = await asyncio.gather(*tasks)
@@ -755,5 +763,9 @@ class User():
         await self._post_substitutions(lineup)
 
     def __str__(self):
-        return (f"{self.player_first_name} {self.player_last_name} - "
-                f"{self.player_region_name}")
+        if hasattr(self, "player_region_name"):
+            return (f"{self.player_first_name} {self.player_last_name} - "
+                    f"{self.player_region_name}")
+        else:
+            return (f"{self.player_first_name} {self.player_last_name} - "
+                    f"{self.region_name}")
